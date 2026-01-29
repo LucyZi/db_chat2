@@ -122,19 +122,19 @@ HTML_TEMPLATE = """
                 <div class="sample-questions">
                     <div class="sample-question" onclick="askSample(this)">
 
-                        <span>What tables are there and how are they connected? Give me a short summary.</span>
+                        <span>Which drugs had the highest total Medicare spending?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
 
-                        <span>What is the distribution of total spending for the drugs?</span>
+                        <span>Among drugs with the highest number of beneficiaries, which ones also have the highest average spending per beneficiary?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
 
-                        <span>What is the distribution of drug brands in the dataset? </span>
+                        <span>How does average spending per claim vary across drugs?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
 
-                        <span>What is the monthly timeseries distribution of total claims for the drugs? draw a line chart to show</span>
+                        <span>Which manufacturers account for the largest share of total Medicare drug spending?</span>
                     </div>
                 </div>
             </div>
