@@ -18,7 +18,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicare Monthly Enrollment</title>
+    <title>Part D and Part B Spending by Drug</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -109,7 +109,7 @@ HTML_TEMPLATE = """
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <span>Medicare Monthly Enrollment</span>
+            <span>Part D and Part B Spending by Drug</span>
             <button class="new-chat-btn" onclick="window.location.reload()" title="New Chat">
                 <i data-lucide="plus-circle"></i>
             </button>
@@ -117,24 +117,24 @@ HTML_TEMPLATE = """
         <div class="chat-messages" id="chat-messages">
             <div class="welcome-screen" id="welcome-screen">
                 <div class="welcome-icon"><i data-lucide="bot"></i></div>
-                <h2>Medicare Monthly Enrollment</h2>
+                <h2>Part D and Part B Spending by Drug</h2>
                 <!-- --- HTML 最终修复: 恢复示例问题 --- -->
                 <div class="sample-questions">
                     <div class="sample-question" onclick="askSample(this)">
                         <i data-lucide="table-2" width="16"></i>
-                        <span>What tables are there and how are they connected? Give me a short summary.</span>
+                        <span>What is the distribution of total spending (tot_spndng) for the drugs?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
                         <i data-lucide="hash" width="16"></i>
-                        <span>What are the minimum, maximum, and average monthly enrollments for Prescription Drug Plans across all counties?</span>
+                        <span>What is the monthly timeseries distribution of total claims (tot_clms) for the drugs?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
                         <i data-lucide="pie-chart" width="16"></i>
-                        <span>What is the distribution of Medicare beneficiaries by coverage type (Original Medicare vs Medicare Advantage) at the state level?</span>
+                        <span>What is the distribution of drug brands (brnd_name) in the dataset?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
                         <i data-lucide="trending-up" width="16"></i>
-                        <span>What is the monthly trend in total number of Medicare beneficiaries enrolled nationally? draw a line chart to show</span>
+                        <span>What tables are there and how are they connected? Give me a short summary.</span>
                     </div>
                 </div>
             </div>
