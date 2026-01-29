@@ -11,7 +11,7 @@ DATABRICKS_HOST = os.getenv("DATABRICKS_HOST")
 GENIE_SPACE_ID = os.getenv("GENIE_SPACE_ID")
 DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN")
 
-# --- 完整的聊天机器人UI模板 (支持上下文最终版) ---
+# --- 完整的聊天机器人UI模板 (已添加移动端适配) ---
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -49,6 +49,32 @@ HTML_TEMPLATE = """
         .chat-input-area textarea { flex-grow: 1; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem; font-size: 1rem; resize: none; font-family: inherit; max-height: 150px; overflow-y: auto; }
         .chat-input-area textarea:focus { outline: none; border-color: var(--accent-color); }
         .chat-input-area button { border: none; background-color: var(--accent-color); color: white; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; height: fit-content; }
+
+        /* --- 核心修改：添加媒体查询以适配移动设备 --- */
+        @media (max-width: 768px) {
+            body {
+                /* 确保嵌入时没有额外的边距 */
+                background-color: transparent;
+            }
+            .chat-container {
+                /* 覆盖桌面端的样式 */
+                position: static; /* 移除绝对定位 */
+                transform: none; /* 移除居中变换 */
+                width: 100%; /* 占满屏幕宽度 */
+                height: 100vh; /* 占满屏幕高度 */
+                max-width: 100%;
+                max-height: 100%;
+                border: none; /* 移除边框 */
+                border-radius: 0; /* 移除圆角 */
+                box-shadow: none; /* 移除阴影 */
+            }
+            .chat-messages {
+                padding: 1rem; /* 在小屏幕上稍微减少一点边距 */
+            }
+            .chat-header {
+                border-radius: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -90,8 +116,6 @@ HTML_TEMPLATE = """
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('userInput');
         const welcomeScreen = document.getElementById('welcome-screen');
-
-        // 在 JS 中添加一个变量来保存对话ID
         let currentConversationId = null;
 
         userInput.addEventListener('input', function () { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
@@ -105,35 +129,20 @@ HTML_TEMPLATE = """
         async function sendMessage() {
             const question = userInput.value.trim();
             if (!question) return;
-
-            if (welcomeScreen && welcomeScreen.style.display !== 'none') {
-                welcomeScreen.style.display = 'none';
-            }
-
+            if (welcomeScreen && welcomeScreen.style.display !== 'none') { welcomeScreen.style.display = 'none'; }
             addMessage(question, 'user');
             userInput.value = '';
             userInput.style.height = 'auto';
             showTypingIndicator();
-
             try {
-                // 发送请求时，带上已保存的 conversation_id
                 const res = await fetch('/ask', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        question: question,
-                        conversation_id: currentConversationId // 第一次发送时为 null
-                    })
+                    body: JSON.stringify({ question: question, conversation_id: currentConversationId })
                 });
                 const data = await res.json();
-                
                 removeTypingIndicator();
-
-                // 从后端响应中获取并保存 conversation_id
-                if (data.conversation_id) {
-                    currentConversationId = data.conversation_id;
-                }
-
+                if (data.conversation_id) { currentConversationId = data.conversation_id; }
                 if (data.error) {
                     addMessage(`Error: ${data.details || data.error}`, 'bot');
                 } else if (data.type === 'chart_with_text') {
@@ -144,7 +153,6 @@ HTML_TEMPLATE = """
                 } else if (data.type === 'text' && data.content) {
                     addMessage(data.content, 'bot');
                 }
-
             } catch (error) {
                 removeTypingIndicator();
                 addMessage('An unexpected error occurred: ' + error, 'bot');
@@ -155,7 +163,7 @@ HTML_TEMPLATE = """
 </html>
 """
 
-# --- Python 后端部分 ---
+# --- Python 后端部分 (保持不变) ---
 app = Flask(__name__)
 
 @app.route('/')
@@ -167,9 +175,8 @@ def ask():
     if not all([DATABRICKS_HOST, GENIE_SPACE_ID, DATABRICKS_TOKEN]):
         return jsonify({"error": "Server is not configured. Missing environment variables."}), 500
     
-    # 从前端获取 conversation_id
     user_question = request.json.get('question')
-    conversation_id = request.json.get('conversation_id') # 可能是 None
+    conversation_id = request.json.get('conversation_id')
 
     if not user_question:
         return jsonify({'error': 'Question cannot be empty'}), 400
@@ -180,9 +187,7 @@ def ask():
         
         message_id = None
 
-        # 判断是新对话还是追问
         if not conversation_id:
-            # 开始新对话
             start_conv_url = f"{DATABRICKS_HOST}/api/2.0/genie/spaces/{GENIE_SPACE_ID}/start-conversation"
             start_payload = {'content': user_question}
             start_response = requests.post(start_conv_url, headers=headers, json=start_payload, verify=ssl_verify_path)
@@ -191,7 +196,6 @@ def ask():
             conversation_id = start_data['conversation']['id']
             message_id = start_data['message']['id']
         else:
-            # 在现有对话中添加新消息
             add_message_url = f"{DATABRICKS_HOST}/api/2.0/genie/spaces/{GENIE_SPACE_ID}/conversations/{conversation_id}/messages"
             add_payload = {'content': user_question}
             add_response = requests.post(add_message_url, headers=headers, json=add_payload, verify=ssl_verify_path)
@@ -199,7 +203,6 @@ def ask():
             add_data = add_response.json()
             message_id = add_data['id']
 
-        # 后续的轮询逻辑
         message_url = f"{DATABRICKS_HOST}/api/2.0/genie/spaces/{GENIE_SPACE_ID}/conversations/{conversation_id}/messages/{message_id}"
         status = ""
         poll_data = {}
@@ -211,7 +214,6 @@ def ask():
             poll_data = poll_response.json()
             status = poll_data.get('status')
         
-        # 在返回的 JSON 中始终包含 conversation_id
         base_response = {"conversation_id": conversation_id}
 
         if status == 'COMPLETED':
@@ -241,10 +243,7 @@ def ask():
                             
                             col1_type = columns[0]['type_name'].lower()
                             col2_type = columns[1]['type_name'].lower()
-                            is_chartable = (
-                                ('date' in col1_type or 'string' in col1_type) and
-                                ('long' in col2_type or 'int' in col2_type or 'double' in col2_type or 'float' in col2_type or 'decimal' in col2_type)
-                            )
+                            is_chartable = (('date' in col1_type or 'string' in col1_type) and ('long' in col2_type or 'int' in col2_type or 'double' in col2_type or 'float' in col2_type or 'decimal' in col2_type))
 
                             if is_chartable and data_array:
                                 labels = [row[0] for row in data_array]
@@ -255,29 +254,14 @@ def ask():
 
                                 chart_data = {
                                     'labels': labels,
-                                    'datasets': [{
-                                        'label': columns[1]['name'].replace('_', ' ').title(),
-                                        'data': data_points,
-                                        'fill': False,
-                                        'borderColor': '#6366f1',
-                                        'tension': 0.1
-                                    }]
+                                    'datasets': [{'label': columns[1]['name'].replace('_', ' ').title(), 'data': data_points, 'fill': False, 'borderColor': '#6366f1', 'tension': 0.1}]
                                 }
                                 
                                 if text_parts:
-                                    base_response.update({
-                                        'type': 'chart_with_text',
-                                        'title': f"Trend of {chart_data['datasets'][0]['label']}",
-                                        'data': chart_data,
-                                        'content': "\n\n".join(text_parts)
-                                    })
+                                    base_response.update({'type': 'chart_with_text', 'title': f"Trend of {chart_data['datasets'][0]['label']}", 'data': chart_data, 'content': "\n\n".join(text_parts)})
                                     return jsonify(base_response)
                                 else:
-                                    base_response.update({
-                                        'type': 'chart',
-                                        'title': f"Trend of {chart_data['datasets'][0]['label']}",
-                                        'data': chart_data
-                                    })
+                                    base_response.update({'type': 'chart', 'title': f"Trend of {chart_data['datasets'][0]['label']}", 'data': chart_data})
                                     return jsonify(base_response)
 
                         if result.get('data_array'):
