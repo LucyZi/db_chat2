@@ -121,20 +121,20 @@ HTML_TEMPLATE = """
                 <!-- --- HTML 最终修复: 恢复示例问题 --- -->
                 <div class="sample-questions">
                     <div class="sample-question" onclick="askSample(this)">
-                        <i data-lucide="table-2" width="16"></i>
-                        <span>What is the distribution of total spending (tot_spndng) for the drugs?</span>
-                    </div>
-                    <div class="sample-question" onclick="askSample(this)">
-                        <i data-lucide="hash" width="16"></i>
-                        <span>What is the monthly timeseries distribution of total claims (tot_clms) for the drugs?</span>
-                    </div>
-                    <div class="sample-question" onclick="askSample(this)">
-                        <i data-lucide="pie-chart" width="16"></i>
-                        <span>What is the distribution of drug brands (brnd_name) in the dataset?</span>
-                    </div>
-                    <div class="sample-question" onclick="askSample(this)">
-                        <i data-lucide="trending-up" width="16"></i>
+
                         <span>What tables are there and how are they connected? Give me a short summary.</span>
+                    </div>
+                    <div class="sample-question" onclick="askSample(this)">
+
+                        <span>What is the distribution of total spending for the drugs?</span>
+                    </div>
+                    <div class="sample-question" onclick="askSample(this)">
+
+                        <span>What is the distribution of drug brands in the dataset? </span>
+                    </div>
+                    <div class="sample-question" onclick="askSample(this)">
+
+                        <span>What is the monthly timeseries distribution of total claims for the drugs? draw a line chart to show</span>
                     </div>
                 </div>
             </div>
