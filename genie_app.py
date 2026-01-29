@@ -11,7 +11,7 @@ DATABRICKS_HOST = os.getenv("DATABRICKS_HOST")
 GENIE_SPACE_ID = os.getenv("GENIE_SPACE_ID")
 DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN")
 
-# --- 完整的聊天机器人UI模板 (终极版) ---
+# --- 完整的聊天机器人UI模板 (支持上下文最终版) ---
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -23,56 +23,11 @@ HTML_TEMPLATE = """
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg-color: #ffffff; --text-color: #1a1a1a; --border-color: #e0e0e0; --placeholder-color: #6b7280; --bot-bg: #f7f7f7; --accent-color: #6366f1; }
-        
-        body { 
-            margin: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
-            background-color: var(--bg-color); 
-            color: var(--text-color); 
-        }
-
-        .chat-container { 
-            width: 100%; 
-            max-width: 800px; 
-            height: 90vh; 
-            max-height: 800px; 
-            display: flex; 
-            flex-direction: column; 
-            border: 1px solid var(--border-color); 
-            border-radius: 12px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-            overflow: hidden;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        
-        .chat-header { 
-            padding: 1rem; 
-            border-bottom: 1px solid var(--border-color); 
-            font-weight: 600; 
-            font-size: 1.1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .new-chat-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--placeholder-color);
-            padding: 4px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .new-chat-btn:hover {
-            background-color: var(--bot-bg);
-            color: var(--text-color);
-        }
-
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); }
+        .chat-container { width: 100%; max-width: 800px; height: 90vh; max-height: 800px; display: flex; flex-direction: column; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .chat-header { padding: 1rem; border-bottom: 1px solid var(--border-color); font-weight: 600; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
+        .new-chat-btn { background: none; border: none; cursor: pointer; color: var(--placeholder-color); padding: 4px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+        .new-chat-btn:hover { background-color: var(--bot-bg); color: var(--text-color); }
         .chat-messages { flex-grow: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; }
         .welcome-screen { text-align: center; margin: auto; }
         .welcome-icon { width: 60px; height: 60px; background: linear-gradient(135deg, #a78bfa, #6366f1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; }
@@ -91,17 +46,7 @@ HTML_TEMPLATE = """
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
         .chat-input-area { border-top: 1px solid var(--border-color); padding: 1rem; display: flex; gap: 0.5rem; align-items: flex-start; }
-        .chat-input-area textarea { 
-            flex-grow: 1; 
-            border: 1px solid var(--border-color); 
-            border-radius: 8px; 
-            padding: 0.75rem; 
-            font-size: 1rem; 
-            resize: none; 
-            font-family: inherit;
-            max-height: 150px;
-            overflow-y: auto;
-        }
+        .chat-input-area textarea { flex-grow: 1; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem; font-size: 1rem; resize: none; font-family: inherit; max-height: 150px; overflow-y: auto; }
         .chat-input-area textarea:focus { outline: none; border-color: var(--accent-color); }
         .chat-input-area button { border: none; background-color: var(--accent-color); color: white; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; height: fit-content; }
     </style>
@@ -118,22 +63,17 @@ HTML_TEMPLATE = """
             <div class="welcome-screen" id="welcome-screen">
                 <div class="welcome-icon"><i data-lucide="bot"></i></div>
                 <h2>Part D and Part B Spending by Drug</h2>
-                <!-- --- HTML 最终修复: 恢复示例问题 --- -->
                 <div class="sample-questions">
                     <div class="sample-question" onclick="askSample(this)">
-
                         <span>Which drugs had the highest total Medicare spending?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
-
                         <span>Among drugs with the highest number of beneficiaries, which ones also have the highest average spending per beneficiary?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
-
                         <span>How does average spending per claim vary across drugs?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
-
                         <span>Which manufacturers account for the largest share of total Medicare drug spending?</span>
                     </div>
                 </div>
@@ -151,81 +91,16 @@ HTML_TEMPLATE = """
         const userInput = document.getElementById('userInput');
         const welcomeScreen = document.getElementById('welcome-screen');
 
-        userInput.addEventListener('input', function () {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
+        // 在 JS 中添加一个变量来保存对话ID
+        let currentConversationId = null;
 
-        function askSample(element) {
-            const question = element.querySelector('span').innerText;
-            userInput.value = question;
-            // 触发 input 事件来调整高度
-            userInput.dispatchEvent(new Event('input', { bubbles: true }));
-            sendMessage();
-        }
-
-        function handleEnter(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendMessage();
-            }
-        }
-
-        function renderChart(chartData, title) {
-            const wrapper = document.createElement('div');
-            wrapper.classList.add('chart-container-wrapper');
-            const chartContainer = document.createElement('div');
-            chartContainer.classList.add('chart-container');
-            const canvas = document.createElement('canvas');
-            chartContainer.appendChild(canvas);
-            wrapper.appendChild(chartContainer);
-            chatMessages.appendChild(wrapper);
-
-            new Chart(canvas, {
-                type: 'line',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'top' }, title: { display: true, text: title } },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            ticks: {
-                                callback: function(value) {
-                                    if (Math.abs(value) >= 1e9) return (value / 1e9).toFixed(2) + 'B';
-                                    if (Math.abs(value) >= 1e6) return (value / 1e6).toFixed(2) + 'M';
-                                    if (Math.abs(value) >= 1e3) return (value / 1e3).toFixed(2) + 'K';
-                                    return value;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function addMessage(content, sender) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message', `${sender}-message`);
-            messageElement.innerText = content;
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function showTypingIndicator() {
-            const indicator = document.createElement('div');
-            indicator.id = 'typing-indicator';
-            indicator.classList.add('typing-indicator');
-            indicator.innerHTML = '<span></span><span></span><span></span>';
-            chatMessages.appendChild(indicator);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function removeTypingIndicator() {
-            const indicator = document.getElementById('typing-indicator');
-            if (indicator) indicator.remove();
-        }
+        userInput.addEventListener('input', function () { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
+        function askSample(element) { const question = element.querySelector('span').innerText; userInput.value = question; userInput.dispatchEvent(new Event('input', { bubbles: true })); sendMessage(); }
+        function handleEnter(event) { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } }
+        function renderChart(chartData, title) { const wrapper = document.createElement('div'); wrapper.classList.add('chart-container-wrapper'); const chartContainer = document.createElement('div'); chartContainer.classList.add('chart-container'); const canvas = document.createElement('canvas'); chartContainer.appendChild(canvas); wrapper.appendChild(chartContainer); chatMessages.appendChild(wrapper); new Chart(canvas, { type: 'line', data: chartData, options: { responsive: true, plugins: { legend: { position: 'top' }, title: { display: true, text: title } }, scales: { y: { beginAtZero: false, ticks: { callback: function(value) { if (Math.abs(value) >= 1e9) return (value / 1e9).toFixed(2) + 'B'; if (Math.abs(value) >= 1e6) return (value / 1e6).toFixed(2) + 'M'; if (Math.abs(value) >= 1e3) return (value / 1e3).toFixed(2) + 'K'; return value; } } } } } }); chatMessages.scrollTop = chatMessages.scrollHeight; }
+        function addMessage(content, sender) { const messageElement = document.createElement('div'); messageElement.classList.add('message', `${sender}-message`); messageElement.innerText = content; chatMessages.appendChild(messageElement); chatMessages.scrollTop = chatMessages.scrollHeight; }
+        function showTypingIndicator() { const indicator = document.createElement('div'); indicator.id = 'typing-indicator'; indicator.classList.add('typing-indicator'); indicator.innerHTML = '<span></span><span></span><span></span>'; chatMessages.appendChild(indicator); chatMessages.scrollTop = chatMessages.scrollHeight; }
+        function removeTypingIndicator() { const indicator = document.getElementById('typing-indicator'); if (indicator) indicator.remove(); }
 
         async function sendMessage() {
             const question = userInput.value.trim();
@@ -237,18 +112,27 @@ HTML_TEMPLATE = """
 
             addMessage(question, 'user');
             userInput.value = '';
-            userInput.style.height = 'auto'; // 发送后重置高度
+            userInput.style.height = 'auto';
             showTypingIndicator();
 
             try {
+                // 发送请求时，带上已保存的 conversation_id
                 const res = await fetch('/ask', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question: question })
+                    body: JSON.stringify({ 
+                        question: question,
+                        conversation_id: currentConversationId // 第一次发送时为 null
+                    })
                 });
                 const data = await res.json();
                 
                 removeTypingIndicator();
+
+                // 从后端响应中获取并保存 conversation_id
+                if (data.conversation_id) {
+                    currentConversationId = data.conversation_id;
+                }
 
                 if (data.error) {
                     addMessage(`Error: ${data.details || data.error}`, 'bot');
@@ -271,7 +155,7 @@ HTML_TEMPLATE = """
 </html>
 """
 
-# Python 后端部分完全不变
+# --- Python 后端部分 ---
 app = Flask(__name__)
 
 @app.route('/')
@@ -283,22 +167,39 @@ def ask():
     if not all([DATABRICKS_HOST, GENIE_SPACE_ID, DATABRICKS_TOKEN]):
         return jsonify({"error": "Server is not configured. Missing environment variables."}), 500
     
+    # 从前端获取 conversation_id
     user_question = request.json.get('question')
+    conversation_id = request.json.get('conversation_id') # 可能是 None
+
     if not user_question:
         return jsonify({'error': 'Question cannot be empty'}), 400
 
     try:
         headers = {'Authorization': f'Bearer {DATABRICKS_TOKEN}', 'Content-Type': 'application/json'}
         ssl_verify_path = certifi.where()
-
-        start_conv_url = f"{DATABRICKS_HOST}/api/2.0/genie/spaces/{GENIE_SPACE_ID}/start-conversation"
-        start_payload = {'content': user_question}
-        start_response = requests.post(start_conv_url, headers=headers, json=start_payload, verify=ssl_verify_path)
-        start_response.raise_for_status()
-        start_data = start_response.json()
-        conversation_id = start_data['conversation']['id']
-        message_id = start_data['message']['id']
         
+        message_id = None
+
+        # 判断是新对话还是追问
+        if not conversation_id:
+            # 开始新对话
+            start_conv_url = f"{DATABRICKS_HOST}/api/2.0/genie/spaces/{GENIE_SPACE_ID}/start-conversation"
+            start_payload = {'content': user_question}
+            start_response = requests.post(start_conv_url, headers=headers, json=start_payload, verify=ssl_verify_path)
+            start_response.raise_for_status()
+            start_data = start_response.json()
+            conversation_id = start_data['conversation']['id']
+            message_id = start_data['message']['id']
+        else:
+            # 在现有对话中添加新消息
+            add_message_url = f"{DATABRICKS_HOST}/api/2.0/genie/spaces/{GENIE_SPACE_ID}/conversations/{conversation_id}/messages"
+            add_payload = {'content': user_question}
+            add_response = requests.post(add_message_url, headers=headers, json=add_payload, verify=ssl_verify_path)
+            add_response.raise_for_status()
+            add_data = add_response.json()
+            message_id = add_data['id']
+
+        # 后续的轮询逻辑
         message_url = f"{DATABRICKS_HOST}/api/2.0/genie/spaces/{GENIE_SPACE_ID}/conversations/{conversation_id}/messages/{message_id}"
         status = ""
         poll_data = {}
@@ -310,6 +211,9 @@ def ask():
             poll_data = poll_response.json()
             status = poll_data.get('status')
         
+        # 在返回的 JSON 中始终包含 conversation_id
+        base_response = {"conversation_id": conversation_id}
+
         if status == 'COMPLETED':
             text_parts = []
             
@@ -361,18 +265,20 @@ def ask():
                                 }
                                 
                                 if text_parts:
-                                    return jsonify({
+                                    base_response.update({
                                         'type': 'chart_with_text',
                                         'title': f"Trend of {chart_data['datasets'][0]['label']}",
                                         'data': chart_data,
                                         'content': "\n\n".join(text_parts)
                                     })
+                                    return jsonify(base_response)
                                 else:
-                                    return jsonify({
+                                    base_response.update({
                                         'type': 'chart',
                                         'title': f"Trend of {chart_data['datasets'][0]['label']}",
                                         'data': chart_data
                                     })
+                                    return jsonify(base_response)
 
                         if result.get('data_array'):
                             cols = [col['name'] for col in manifest['schema']['columns']]
@@ -381,9 +287,11 @@ def ask():
                             text_parts.append(table_text)
             
             if text_parts:
-                return jsonify({'type': 'text', 'content': "\n\n".join(text_parts)})
+                base_response.update({'type': 'text', 'content': "\n\n".join(text_parts)})
+                return jsonify(base_response)
             else:
-                return jsonify({'type': 'text', 'content': "I've processed your request, but couldn't find a specific answer or data."})
+                base_response.update({'type': 'text', 'content': "I've processed your request, but couldn't find a specific answer or data."})
+                return jsonify(base_response)
         else:
             return jsonify({'error': f'Failed to get answer. Final status: {status}', 'details': poll_data.get('error')}), 500
 
