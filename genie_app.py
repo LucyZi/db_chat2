@@ -65,17 +65,12 @@ HTML_TEMPLATE = """
                 <h2>Part D and Part B Spending by Drug</h2>
                 <div class="sample-questions">
                     <div class="sample-question" onclick="askSample(this)">
-                        <span>Which drugs had the highest total Medicare spending?</span>
+                        <span>Spending of Entyvio?</span>
                     </div>
                     <div class="sample-question" onclick="askSample(this)">
-                        <span>Among drugs with the highest number of beneficiaries, which ones also have the highest average spending per beneficiary?</span>
+                        <span>Among top 5 drugs with the highest number of beneficiaries, which one also have the highest average spending per beneficiary?</span>
                     </div>
-                    <div class="sample-question" onclick="askSample(this)">
-                        <span>How does average spending per claim vary across drugs?</span>
-                    </div>
-                    <div class="sample-question" onclick="askSample(this)">
-                        <span>Which manufacturers account for the largest share of total Medicare drug spending?</span>
-                    </div>
+
                 </div>
             </div>
         </div>
